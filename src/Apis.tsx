@@ -2,6 +2,7 @@
 import axios from "axios";
 
 interface HelloResponse { 
+    //TODO: change it to match invoice class "intity"
     message: string;
 }
 
