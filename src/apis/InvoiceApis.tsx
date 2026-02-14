@@ -14,12 +14,13 @@ const fetchInvoices = async (): Promise<Invoice[]> => {
         return res.data; 
     } catch (err) {
         console.error(err)
+        throw err
     }
 }
 
 const CreateInvoice = async (): Promise<void> => {
     try {
-        const res = await axios.post<HelloResponse>(
+        const res = await axios.post<Invoice>(
             "http://localhost:5000/api/invoice/CreateInvoice"
         )
     } catch (err) {
@@ -29,7 +30,7 @@ const CreateInvoice = async (): Promise<void> => {
 
 const UpdateInvoice = async (): Promise<void> => {
     try {
-        const res = await axios.post<HelloResponse>(
+        const res = await axios.post<Invoice>(
             "http://localhost:5000/api/invoice/UpdateInvoice"
         )
     } catch (err) {
