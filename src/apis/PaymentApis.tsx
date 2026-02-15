@@ -1,25 +1,29 @@
 // import React from "react";
 import axios from "axios";
 
-interface HelloResponse { 
-    //TODO: change it to match Payment class "intity"
-    message: string;
+interface Payment { 
+    Id: string;
+    InvoiceId: string;
+    Amount: number;
+    CreatedAt: string;
+    Currency: string;
 }
 
-const GetAllPayments = async (): Promise<void> => {
+const GetAllPayments = async (): Promise<Payment[]> => {
     try {
-        const res = await axios.get<HelloResponse>(
+        const res = await axios.get<Payment[]>(
             "http://localhost:5000/api/GetAllPayments"
         )
-        
+        return res.data;
     } catch (err) {
         console.error(err)
+        throw err
     }
 }
 
 const CreatePayment = async (): Promise<void> => {
     try {
-        const res = await axios.post<HelloResponse>(
+        const res = await axios.post<Payment>(
             "http://localhost:5000/api/Payment/CreatePayment"
         )
     } catch (err) {
@@ -29,7 +33,7 @@ const CreatePayment = async (): Promise<void> => {
 
 const UpdatePayment = async (): Promise<void> => {
     try {
-        const res = await axios.post<HelloResponse>(
+        const res = await axios.post<Payment>(
             "http://localhost:5000/api/Payment/UpdatePayment"
         )
     } catch (err) {

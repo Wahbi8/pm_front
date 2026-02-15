@@ -48,17 +48,28 @@ import {
   AccountBalance as AccountBalanceIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
-
+import { useEffect } from 'react';
+import { fetchInvoices, type Invoice } from './apis/InvoiceApis';
 // Define the shape of an Invoice object
-interface Invoice {
-  id: string;
-  client: string;
-  amount: number;
-  date: string;
-  dueDate: string;
-  status: 'paid' | 'pending' | 'overdue' | 'draft';
-}
+// interface Invoice {
+//   id: string;
+//   client: string;
+//   amount: number;
+//   date: string;
+//   dueDate: string;
+//   status: 'paid' | 'pending' | 'overdue' | 'draft';
+// }
 
+const getStatusLabel = (status: number) => {
+  switch (status) {
+    case 0: return 'DRAFT';
+    case 1: return 'SENT';
+    case 2: return 'PAID';
+    case 3: return 'OVERDUE';
+    case 4: return 'CANCELLED';
+    default: return 'UNKNOWN';
+  }
+};
 export default function InvoiceManagement() {
   const [selectedTab, setSelectedTab] = useState<number>(0);
   // We explicitly state that selectedInvoice can be an Invoice object or null
@@ -66,70 +77,106 @@ export default function InvoiceManagement() {
   const [openAddInvoice, setOpenAddInvoice] = useState<boolean>(false);
   const [openAddPayment, setOpenAddPayment] = useState<boolean>(false);
   const [openAddPaymentMethod, setOpenAddPaymentMethod] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [invoices, setInvoices] = useState<Invoice[]>([]); 
+
+  useEffect(() => {
+    const loadInvoices = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchInvoices();
+        setInvoices(data || []); 
+      } catch (error) {
+        console.error("Failed to fetch invoices", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadInvoices();
+  }, []);
+
+   const getStatusColor = (status: number): string => {
+    switch (status) {
+      case 2: return '#10b981'; // Paid
+      case 1: return '#f59e0b'; // Sent/Pending
+      case 3: return '#ef4444'; // Overdue
+      default: return '#6b7280'; // Draft/Cancelled
+    }
+  };
+
+  const getStatusIcon = (status: number): JSX.Element => {
+    switch (status) {
+      case 2: return <CheckIcon sx={{ fontSize: 18 }} />;
+      case 1: return <ScheduleIcon sx={{ fontSize: 18 }} />;
+      case 3: return <CancelIcon sx={{ fontSize: 18 }} />;
+      default: return <MoreIcon sx={{ fontSize: 18 }} />;
+    }
+  };
+
 
   // Sample invoice data typed as an array of Invoice objects
-  const invoices: Invoice[] = [
-    {
-      id: 'INV-001',
-      client: 'Acme Corporation',
-      amount: 2500.00,
-      date: '2026-01-15',
-      dueDate: '2026-02-15',
-      status: 'paid',
-    },
-    {
-      id: 'INV-002',
-      client: 'TechStart Inc',
-      amount: 1800.00,
-      date: '2026-01-20',
-      dueDate: '2026-02-20',
-      status: 'pending',
-    },
-    {
-      id: 'INV-003',
-      client: 'Global Services Ltd',
-      amount: 3200.00,
-      date: '2026-01-25',
-      dueDate: '2026-02-25',
-      status: 'overdue',
-    },
-    {
-      id: 'INV-004',
-      client: 'Creative Agency',
-      amount: 1500.00,
-      date: '2026-01-28',
-      dueDate: '2026-02-28',
-      status: 'draft',
-    },
-  ];
+  // const invoices: Invoice[] = [
+  //   {
+  //     id: 'INV-001',
+  //     client: 'Acme Corporation',
+  //     amount: 2500.00,
+  //     date: '2026-01-15',
+  //     dueDate: '2026-02-15',
+  //     status: 'paid',
+  //   },
+  //   {
+  //     id: 'INV-002',
+  //     client: 'TechStart Inc',
+  //     amount: 1800.00,
+  //     date: '2026-01-20',
+  //     dueDate: '2026-02-20',
+  //     status: 'pending',
+  //   },
+  //   {
+  //     id: 'INV-003',
+  //     client: 'Global Services Ltd',
+  //     amount: 3200.00,
+  //     date: '2026-01-25',
+  //     dueDate: '2026-02-25',
+  //     status: 'overdue',
+  //   },
+  //   {
+  //     id: 'INV-004',
+  //     client: 'Creative Agency',
+  //     amount: 1500.00,
+  //     date: '2026-01-28',
+  //     dueDate: '2026-02-28',
+  //     status: 'draft',
+  //   },
+  // ];
 
-  const getStatusColor = (status: Invoice['status']): string => {
-    switch (status) {
-      case 'paid':
-        return '#10b981';
-      case 'pending':
-        return '#f59e0b';
-      case 'overdue':
-        return '#ef4444';
-      case 'draft':
-        return '#6b7280';
-      default:
-        return '#6b7280';
-    }
-  };
+  // const getStatusColor = (status: Invoice['status']): string => {
+  //   switch (status) {
+  //     case 'paid':
+  //       return '#10b981';
+  //     case 'pending':
+  //       return '#f59e0b';
+  //     case 'overdue':
+  //       return '#ef4444';
+  //     case 'draft':
+  //       return '#6b7280';
+  //     default:
+  //       return '#6b7280';
+  //   }
+  // };
 
-  const getStatusIcon = (status: Invoice['status']): JSX.Element => {
-    switch (status) {
-      case 'paid':
-        return <CheckIcon sx={{ fontSize: 18 }} />;
-      case 'pending':
-        return <ScheduleIcon sx={{ fontSize: 18 }} />;
-      case 'overdue':
-        return <CancelIcon sx={{ fontSize: 18 }} />;
-      default:
-        return <ScheduleIcon sx={{ fontSize: 18 }} />;
-    }
-  };
+  // const getStatusIcon = (status: Invoice['status']): JSX.Element => {
+  //   switch (status) {
+  //     case 'paid':
+  //       return <CheckIcon sx={{ fontSize: 18 }} />;
+  //     case 'pending':
+  //       return <ScheduleIcon sx={{ fontSize: 18 }} />;
+  //     case 'overdue':
+  //       return <CancelIcon sx={{ fontSize: 18 }} />;
+  //     default:
+  //       return <ScheduleIcon sx={{ fontSize: 18 }} />;
+  //   }
+  // };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setSelectedTab(newValue);
@@ -419,18 +466,18 @@ export default function InvoiceManagement() {
                 <Box sx={{ maxHeight: '600px', overflowY: 'auto' }}>
                   {invoices.map((invoice) => (
                     <Paper
-                      key={invoice.id}
+                      key={invoice.Id}
                       onClick={() => handleInvoiceClick(invoice)}
                       sx={{
                         p: 2.5,
                         mb: 2,
                         background:
-                          selectedInvoice?.id === invoice.id
+                          selectedInvoice?.Id === invoice.Id
                             ? 'linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%)'
                             : 'rgba(255, 255, 255, 0.03)',
                         backdropFilter: 'blur(10px)',
                         border:
-                          selectedInvoice?.id === invoice.id
+                          selectedInvoice?.Id === invoice.Id
                             ? '1px solid rgba(59, 130, 246, 0.3)'
                             : '1px solid rgba(255, 255, 255, 0.05)',
                         borderRadius: '16px',
@@ -452,20 +499,20 @@ export default function InvoiceManagement() {
                               mb: 0.5,
                             }}
                           >
-                            {invoice.id}
+                            {invoice.Id}
                           </Typography>
                           <Typography sx={{ color: '#9ca3af', fontSize: '0.95rem' }}>
                             {invoice.client}
                           </Typography>
                         </Box>
                         <Chip
-                          icon={getStatusIcon(invoice.status)}
-                          label={invoice.status.toUpperCase()}
+                          icon={getStatusIcon(invoice.Status)}
+                          label={invoice.Status.toUpperCase()}
                           size="small"
                           sx={{
-                            background: `${getStatusColor(invoice.status)}20`,
-                            color: getStatusColor(invoice.status),
-                            border: `1px solid ${getStatusColor(invoice.status)}40`,
+                            background: `${getStatusColor(invoice.Status)}20`,
+                            color: getStatusColor(invoice.Status),
+                            border: `1px solid ${getStatusColor(invoice.Status)}40`,
                             fontWeight: 600,
                             fontSize: '0.75rem',
                             height: 28,
@@ -480,10 +527,10 @@ export default function InvoiceManagement() {
                             fontSize: '1.5rem',
                           }}
                         >
-                          ${invoice.amount.toFixed(2)}
+                          ${invoice.AmountPaid.toFixed(2)}
                         </Typography>
                         <Typography sx={{ color: '#6b7280', fontSize: '0.9rem' }}>
-                          Due: {new Date(invoice.dueDate).toLocaleDateString()}
+                          Due: {new Date(invoice.DueDate).toLocaleDateString()}
                         </Typography>
                       </Box>
                     </Paper>
@@ -539,7 +586,7 @@ export default function InvoiceManagement() {
                         Invoice Number
                       </Typography>
                       <Typography sx={{ color: '#fff', fontWeight: 600, fontSize: '1.1rem', mb: 2 }}>
-                        {selectedInvoice.id}
+                        {selectedInvoice.Id}
                       </Typography>
 
                       <Typography sx={{ color: '#6b7280', fontSize: '0.85rem', mb: 0.5 }}>
@@ -563,7 +610,7 @@ export default function InvoiceManagement() {
                           WebkitTextFillColor: 'transparent',
                         }}
                       >
-                        ${selectedInvoice.amount.toFixed(2)}
+                        ${selectedInvoice.AmountPaid.toFixed(2)}
                       </Typography>
 
                       <Grid container spacing={2}>
@@ -572,7 +619,7 @@ export default function InvoiceManagement() {
                             Issue Date
                           </Typography>
                           <Typography sx={{ color: '#fff', fontWeight: 600 }}>
-                            {new Date(selectedInvoice.date).toLocaleDateString()}
+                            {new Date(selectedInvoice.IssueDate).toLocaleDateString()}
                           </Typography>
                         </Grid>
                         <Grid size={{ xs:6 }}>
@@ -580,7 +627,7 @@ export default function InvoiceManagement() {
                             Due Date
                           </Typography>
                           <Typography sx={{ color: '#fff', fontWeight: 600 }}>
-                            {new Date(selectedInvoice.dueDate).toLocaleDateString()}
+                            {new Date(selectedInvoice.DueDate).toLocaleDateString()}
                           </Typography>
                         </Grid>
                       </Grid>
@@ -1138,7 +1185,7 @@ export default function InvoiceManagement() {
                 Invoice
               </Typography>
               <Typography sx={{ color: '#fff', fontWeight: 600, fontSize: '1.1rem', mb: 1 }}>
-                {selectedInvoice.id}
+                {selectedInvoice.Id}
               </Typography>
               <Typography sx={{ color: '#9ca3af', fontSize: '0.85rem', mb: 0.5 }}>
                 Amount Due
@@ -1150,7 +1197,7 @@ export default function InvoiceManagement() {
                   fontSize: '1.8rem',
                 }}
               >
-                ${selectedInvoice.amount.toFixed(2)}
+                ${selectedInvoice.AmountPaid.toFixed(2)}
               </Typography>
             </Box>
           )}
@@ -1212,7 +1259,7 @@ export default function InvoiceManagement() {
                 fullWidth
                 label="Payment Amount"
                 type="number"
-                defaultValue={selectedInvoice?.amount || 0}
+                defaultValue={selectedInvoice?.AmountPaid || 0}
                 InputLabelProps={{
                   sx: { color: '#9ca3af' },
                 }}
