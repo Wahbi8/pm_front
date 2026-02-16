@@ -507,7 +507,7 @@ export default function InvoiceManagement() {
                         </Box>
                         <Chip
                           icon={getStatusIcon(invoice.Status)}
-                          label={invoice.Status.toUpperCase()}
+                          label={getStatusLabel(invoice.Status)}
                           size="small"
                           sx={{
                             background: `${getStatusColor(invoice.Status)}20`,
