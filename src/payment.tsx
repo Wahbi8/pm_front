@@ -80,6 +80,26 @@ export default function InvoiceManagement() {
   const [loading, setLoading] = useState<boolean>(true);
   const [invoices, setInvoices] = useState<Invoice[]>([]); 
 
+
+
+  const [formData, setFormData] = useState({
+    clientName: '',
+    invoiceNumber: '',
+    amount: '',
+    issueDate: '',
+    dueDate: '',
+    status: 0, // Assuming 0 is Draft based on your getStatusLabel
+    description: ''
+  });
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | any) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   useEffect(() => {
     const loadInvoices = async () => {
       try {
@@ -113,6 +133,66 @@ export default function InvoiceManagement() {
     }
   };
 
+  const sendToApi = async () => {
+    // Basic Validation
+    if (!formData.clientName || !formData.amount) {
+      alert("Please fill in Client Name and Amount");
+      return;
+    }
+
+    setLoading(true);
+
+    // Prepare payload matching your Invoice type structure (inferred)
+    const payload = {
+      Id: formData.invoiceNumber || `INV-${Math.floor(Math.random() * 1000)}`, // Generate ID if empty
+      client: formData.clientName,
+      AmountPaid: parseFloat(formData.amount),
+      IssueDate: formData.issueDate || new Date().toISOString(),
+      DueDate: formData.dueDate || new Date().toISOString(),
+      Status: Number(formData.status),
+      description: formData.description
+    };
+
+    try {
+      // REPLACE with your actual API URL
+      const response = await fetch('https://your-api.com/api/invoices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      // Check if request was successful
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Sent successfully:', result);
+        
+        // Update the local list so the user sees the new invoice immediately
+        // (Assuming result returns the created invoice, otherwise use 'payload')
+        const newInvoice = result.data || payload; 
+        setInvoices(prev => [newInvoice as Invoice, ...prev]);
+        
+        // Close Dialog and Reset Form
+        setOpenAddInvoice(false);
+        setFormData({
+          clientName: '',
+          invoiceNumber: '',
+          amount: '',
+          issueDate: '',
+          dueDate: '',
+          status: 0,
+          description: ''
+        });
+      } else {
+        console.error('Server returned error');
+      }
+    } catch (error) {
+      console.error('Failed to send:', error);
+      // For testing without a real API, uncomment the line below to simulate success:
+      // setInvoices(prev => [payload as any, ...prev]); setOpenAddInvoice(false);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Sample invoice data typed as an array of Invoice objects
   // const invoices: Invoice[] = [
@@ -888,6 +968,9 @@ export default function InvoiceManagement() {
             <Grid size={{ xs:12 }}>
               <TextField
                 fullWidth
+                name="Client Name"
+                value={formData.clientName}
+                onChange={handleFormChange}
                 label="Client Name"
                 placeholder="Enter client name"
                 InputLabelProps={{
@@ -914,6 +997,9 @@ export default function InvoiceManagement() {
             <Grid  size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
+                name="Invoice Number"
+                value={formData.invoiceNumber}
+                onChange={handleFormChange}
                 label="Invoice Number"
                 placeholder="INV-001"
                 InputLabelProps={{
@@ -940,6 +1026,9 @@ export default function InvoiceManagement() {
             <Grid  size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
+                name="Amount"
+                value={formData.amount}
+                onChange={handleFormChange}
                 label="Amount"
                 type="number"
                 placeholder="0.00"
@@ -968,6 +1057,9 @@ export default function InvoiceManagement() {
             <Grid  size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
+                name="issueDate"
+                value={formData.issueDate}
+                onChange={handleFormChange}
                 label="Issue Date"
                 type="date"
                 InputLabelProps={{
@@ -995,6 +1087,9 @@ export default function InvoiceManagement() {
             <Grid  size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
+                name="dueDate"
+                value={formData.dueDate}
+                onChange={handleFormChange}
                 label="Due Date"
                 type="date"
                 InputLabelProps={{
@@ -1023,7 +1118,9 @@ export default function InvoiceManagement() {
               <FormControl fullWidth>
                 <InputLabel sx={{ color: '#9ca3af' }}>Status</InputLabel>
                 <Select
-                  defaultValue="draft"
+                  name="status"
+                  value={formData.status}
+                  onChange={handleFormChange}
                   label="Status"
                   sx={{
                     color: '#fff',
@@ -1064,10 +1161,10 @@ export default function InvoiceManagement() {
                     },
                   }}
                 >
-                  <MenuItem value="draft">Draft</MenuItem>
-                  <MenuItem value="pending">Pending</MenuItem>
-                  <MenuItem value="paid">Paid</MenuItem>
-                  <MenuItem value="overdue">Overdue</MenuItem>
+                  <MenuItem value={0}>Draft</MenuItem>
+                  <MenuItem value={1}>Sent</MenuItem>
+                  <MenuItem value={2}>Paid</MenuItem>
+                  <MenuItem value={3}>Overdue</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -1118,6 +1215,7 @@ export default function InvoiceManagement() {
           </Button>
           <Button
             variant="contained"
+            onClick={sendToApi}
             sx={{
               background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
               color: '#fff',
