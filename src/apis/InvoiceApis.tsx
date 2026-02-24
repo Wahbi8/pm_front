@@ -28,7 +28,7 @@ export interface Invoice {
 export const fetchInvoices = async (): Promise<Invoice[]> => {
     try {
         const res = await axios.get<Invoice[]>(
-            "http://localhost:5000/api/invoices"
+            "https://localhost:7269/GetAllInvoices"
         );
         return res.data; 
     } catch (err) {

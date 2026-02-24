@@ -144,18 +144,18 @@ export default function InvoiceManagement() {
 
     // Prepare payload matching your Invoice type structure (inferred)
     const payload = {
-      Id: formData.invoiceNumber || `INV-${Math.floor(Math.random() * 1000)}`, // Generate ID if empty
-      client: formData.clientName,
-      AmountPaid: parseFloat(formData.amount),
+      // Id: formData.invoiceNumber || `INV-${Math.floor(Math.random() * 1000)}`, // Generate ID if empty
+      // client: formData.clientName,
+      TotalAmount: parseFloat(formData.amount),
       IssueDate: formData.issueDate || new Date().toISOString(),
       DueDate: formData.dueDate || new Date().toISOString(),
-      Status: Number(formData.status),
-      description: formData.description
+      Status: Number(formData.status)
+      // ,description: formData.description
     };
 
     try {
       // REPLACE with your actual API URL
-      const response = await fetch('https://your-api.com/api/invoices', {
+      const response = await fetch('https://localhost:7269/api/Invoices/AddInvoice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -968,7 +968,7 @@ export default function InvoiceManagement() {
             <Grid size={{ xs:12 }}>
               <TextField
                 fullWidth
-                name="Client Name"
+                name="ClientName"
                 value={formData.clientName}
                 onChange={handleFormChange}
                 label="Client Name"
