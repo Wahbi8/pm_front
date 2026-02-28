@@ -155,7 +155,7 @@ export default function InvoiceManagement() {
 
     try {
       // REPLACE with your actual API URL
-      const response = await fetch('https://localhost:7269/api/Invoices/AddInvoice', {
+      const response = await fetch('https://localhost:7269/AddInvoice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -968,7 +968,7 @@ export default function InvoiceManagement() {
             <Grid size={{ xs:12 }}>
               <TextField
                 fullWidth
-                name="ClientName"
+                name="clientName"
                 value={formData.clientName}
                 onChange={handleFormChange}
                 label="Client Name"
@@ -997,7 +997,7 @@ export default function InvoiceManagement() {
             <Grid  size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
-                name="Invoice Number"
+                name="invoiceNumber"
                 value={formData.invoiceNumber}
                 onChange={handleFormChange}
                 label="Invoice Number"
@@ -1026,7 +1026,7 @@ export default function InvoiceManagement() {
             <Grid  size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
-                name="Amount"
+                name="amount"
                 value={formData.amount}
                 onChange={handleFormChange}
                 label="Amount"
